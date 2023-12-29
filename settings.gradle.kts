@@ -98,4 +98,4 @@ dependencyResolutionManagement {
 rootProject.name = "tagged-okhttp-logging-interceptor"
 include(":tagged-logger")
 include(":tagged-logger-android")
-
+include(":sample-app")
