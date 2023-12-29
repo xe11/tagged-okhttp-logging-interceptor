@@ -2,7 +2,10 @@ plugins {
     alias(libs.plugins.androidLibrary)
     alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.junit5Android)
+    id("maven-publish")
 }
+
+val buildType = "release"
 
 android {
     namespace = "xe11.ok.logging"
@@ -27,6 +30,35 @@ android {
     }
     kotlinOptions {
         jvmTarget = "1.8"
+    }
+
+    publishing {
+        singleVariant(buildType) {
+            withSourcesJar()
+        }
+    }
+}
+
+publishing {
+    publications {
+        create<MavenPublication>(buildType) {
+            groupId = "com.github.xe11"
+            artifactId = "tagged-okhttp-logging-interceptor"
+
+            afterEvaluate {
+                from(components[buildType])
+            }
+        }
+    }
+
+    repositories {
+        // ./gradlew publishReleasePublicationToMavenLocal to publish to ~/.m2
+
+        maven {
+            //  ./gradlew publishReleaseToMvnBuildDirRepository to publish to <module>/build/repo
+            name = "MvnBuildDir"
+            url = uri("${project.buildDir}/repo")
+        }
     }
 }
 
