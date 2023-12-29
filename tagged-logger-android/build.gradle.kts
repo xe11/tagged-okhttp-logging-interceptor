@@ -43,7 +43,7 @@ publishing {
     publications {
         create<MavenPublication>(buildType) {
             groupId = "com.github.xe11"
-            artifactId = "tagged-okhttp-logging-interceptor"
+            artifactId = "tagged-okhttp-logging-interceptor-android"
 
             afterEvaluate {
                 from(components[buildType])

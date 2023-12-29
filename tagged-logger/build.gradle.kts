@@ -1,7 +1,7 @@
 plugins {
     id("java-library")
     alias(libs.plugins.kotlinJvm)
-    // id("de.mannodermaus.android-junit5") version "1.10.0.0"
+    id("maven-publish")
 }
 
 java {
@@ -23,6 +23,29 @@ dependencies {
 
     testImplementation(libs.testing.assertj)
     testImplementation(libs.network.okhttpMockWebServer)
+}
+
+val buildType = "release"
+
+publishing {
+    publications {
+        create(buildType, MavenPublication::class.java) {
+            groupId = "com.github.xe11"
+            artifactId = "tagged-okhttp-logging-interceptor"
+
+            afterEvaluate { from(components["java"]) }
+        }
+    }
+
+    repositories {
+        // ./gradlew publishReleasePublicationToMavenLocal to publish to ~/.m2
+
+        maven {
+            //  ./gradlew publishReleaseToMvnBuildDirRepository to publish to <module>/build/repo
+            name = "MvnBuildDir"
+            url = uri("${project.buildDir}/repo")
+        }
+    }
 }
 
 tasks.test {
