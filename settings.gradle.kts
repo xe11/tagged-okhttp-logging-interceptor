@@ -96,3 +96,4 @@ dependencyResolutionManagement {
     }
 }
 rootProject.name = "tagged-okhttp-logging-interceptor"
+include(":tagged-logger")
