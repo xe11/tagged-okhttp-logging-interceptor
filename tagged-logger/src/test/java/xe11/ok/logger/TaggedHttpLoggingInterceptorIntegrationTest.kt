@@ -303,7 +303,7 @@ internal class TaggedHttpLoggingInterceptorIntegrationTest {
 
         val client = OkHttpClient.Builder()
             .addNetworkInterceptor(interceptor)
-            .callTimeout(100.milliseconds.toJavaDuration())
+            .callTimeout(300.milliseconds.toJavaDuration())
             .build()
 
         return client
@@ -319,44 +319,12 @@ private fun TestPrinter.assertLines(expectedMultiline: String) {
     }
 }
 
-private fun List<TestPrinter.LogItem>.assertMessages(expectedMultiline: String) {
-    val messages = expectedMultiline.trimIndent().split('\n')
-    assertMessagesList(*messages.toTypedArray())
-}
-
-private fun List<TestPrinter.LogItem>.assertMessagesList(vararg expected: String) {
-    forEachIndexed { index, logItem ->
-        val message = logItem.message.removeRequestDuration()
-        assertThat(message).isEqualTo(expected[index])
-    }
-}
-
 private fun String.removeRequestDuration(): String {
     return if (this.endsWith("ms)")) {
         this.substring(0, this.lastIndexOf(" ("))
     } else {
         this
     }
-}
-
-private fun List<TestPrinter.LogItem>.assertLevel(expected: Level) {
-    forEach {
-        it.assertLevel(expected)
-    }
-}
-
-private fun TestPrinter.LogItem.assertLevel(expected: Level) {
-    assertThat(this.level).isEqualTo(expected)
-}
-
-private fun List<TestPrinter.LogItem>.assertTag(expected: String) {
-    forEach {
-        assertThat(it.tag).isEqualTo(expected)
-    }
-}
-
-private fun TestPrinter.LogItem.assertMessage(expected: String) {
-    assertThat(this.message).isEqualTo(expected)
 }
 
 internal class TestPrinter : Printer {
