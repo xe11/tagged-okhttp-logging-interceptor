@@ -14,7 +14,7 @@ internal class UrlTagProvider : TagProvider {
 
     private fun pathSegmentsShortened(pathSegments: List<String>, maxSize: Short): List<String> {
         val segmentsSize = pathSegments.size
-        if (segmentsSize == 0) {
+        if (segmentsSize == 1 && pathSegments[0] == "") {
             return emptyList()
         }
 
@@ -37,14 +37,7 @@ internal class UrlTagProvider : TagProvider {
             .substring(0, Integer.min(segment.length, length))
             .lowercase()
             .capitalize()
-}
 
-private fun String.capitalize(): String {
-    return replaceFirstChar { firstChar ->
-        if (firstChar.isLowerCase()) {
-            firstChar.titlecase(Locale.getDefault())
-        } else {
-            firstChar.toString()
-        }
-    }
+    private fun String.capitalize(): String =
+        replaceFirstChar { firstChar -> firstChar.titlecase(Locale.getDefault()) }
 }
