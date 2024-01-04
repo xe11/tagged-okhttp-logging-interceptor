@@ -1,3 +1,8 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+import org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED
+import org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED
+import org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED
+
 plugins {
     id("java-library")
     alias(libs.plugins.kotlinJvm)
@@ -52,7 +57,11 @@ publishing {
 tasks.test {
     useJUnitPlatform()
     testLogging {
-        events("passed", "skipped", "failed")
+        events(FAILED, SKIPPED, PASSED)
+        showExceptions = true
+        exceptionFormat = FULL
+        showCauses = true
+        showStackTraces = true
     }
 }
 
