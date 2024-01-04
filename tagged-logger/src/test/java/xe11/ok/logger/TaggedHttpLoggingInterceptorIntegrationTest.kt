@@ -23,6 +23,8 @@ internal class TaggedHttpLoggingInterceptorIntegrationTest {
 
     private val server = MockWebServer()
 
+    private val testPrinter = TestPrinter()
+
     @BeforeEach
     fun setUp() {
         server.start()
@@ -55,8 +57,8 @@ internal class TaggedHttpLoggingInterceptorIntegrationTest {
 
         server.enqueue(response)
 
-        val testPrinter = TestPrinter()
-        val client = buildClient(testPrinter)
+
+        val client = buildClient()
         client.newCall(request).execute()
 
         testPrinter.assertLines(
@@ -97,8 +99,8 @@ internal class TaggedHttpLoggingInterceptorIntegrationTest {
             .header("User-Agent", "okhttp/test")
             .build()
 
-        val testPrinter = TestPrinter()
-        val client = buildClient(testPrinter)
+
+        val client = buildClient()
 
         assertThatThrownBy {
             client.newCall(request).execute()
@@ -144,8 +146,8 @@ internal class TaggedHttpLoggingInterceptorIntegrationTest {
 
         server.enqueue(response)
 
-        val testPrinter = TestPrinter()
-        val client = buildClient(testPrinter)
+
+        val client = buildClient()
         client.newCall(request).execute()
 
         testPrinter.assertLines(
@@ -189,8 +191,8 @@ internal class TaggedHttpLoggingInterceptorIntegrationTest {
 
         server.enqueue(response)
 
-        val testPrinter = TestPrinter()
-        val client = buildClient(testPrinter)
+
+        val client = buildClient()
         client.newCall(request).execute()
 
         testPrinter.assertLines(
@@ -232,8 +234,8 @@ internal class TaggedHttpLoggingInterceptorIntegrationTest {
                 """.trimIndent()
             )
 
-        val testPrinter = TestPrinter()
-        val client = buildClient(testPrinter)
+
+        val client = buildClient()
         repeat(3) {
             server.enqueue(response)
             client.newCall(request).execute()
@@ -287,18 +289,67 @@ internal class TaggedHttpLoggingInterceptorIntegrationTest {
         )
     }
 
-    private fun buildClient(testPrinter: TestPrinter): OkHttpClient {
-        val interceptor = TaggedHttpLoggingInterceptor(
+    @Test
+    fun `request with PassThrough strategy should be logged as INFO when request succeed`() {
+        val url = server.url("/test/end/point")
+        val port = server.port
+        val request = Request.Builder()
+            .url(url)
+            .header("User-Agent", "okhttp/test")
+            .build()
+        val response = MockResponse()
+            .setResponseCode(200)
+            .setHeader("Test-Header", 42)
+            .setBody(
+                """
+                {
+                    "success": "response",
+                    "body": ["message"]
+                }
+                """.trimIndent()
+            )
+
+        server.enqueue(response)
+
+
+        val client = buildClient(
             Config(
                 tag = {
-                    "nwk: ${reqTag(10)} #${reqNum(3)}"
+                    "nwk: ${reqTag(8)} #${reqNum(3)}"
                 },
-                loggingStrategy = Config.LoggingStrategy.Accumulate(
-                    synchronizeLogging = true,
-                    logLevelScheme = HighlightedErrors(),
+                loggingStrategy = Config.LoggingStrategy.PassThrough(
+                    level = Level.INFO
                 ),
                 printer = ChunkingPrinter(testPrinter),
-            ).let(::DefaultLogCollectorFactory)
+            )
+        )
+        client.newCall(request).execute()
+
+        testPrinter.assertLines(
+            """
+            INFO  nwk: TeEnPo #1  --> GET http://localhost:$port/test/end/point http/1.1
+            INFO  nwk: TeEnPo #1  User-Agent: okhttp/test
+            INFO  nwk: TeEnPo #1  Host: localhost:$port
+            INFO  nwk: TeEnPo #1  Connection: Keep-Alive
+            INFO  nwk: TeEnPo #1  Accept-Encoding: gzip
+            INFO  nwk: TeEnPo #1  --> END GET
+            INFO  nwk: TeEnPo #1  <-- 200 OK http://localhost:$port/test/end/point
+            INFO  nwk: TeEnPo #1  Test-Header: 42
+            INFO  nwk: TeEnPo #1  Content-Length: 54
+            INFO  nwk: TeEnPo #1  {
+            INFO  nwk: TeEnPo #1      "success": "response",
+            INFO  nwk: TeEnPo #1      "body": ["message"]
+            INFO  nwk: TeEnPo #1  }
+            INFO  nwk: TeEnPo #1  <-- END HTTP (54-byte body)
+            """
+        )
+    }
+
+    private fun buildClient(config: Config? = null): OkHttpClient {
+        val cfg = config ?: defaultTestConfig()
+
+        val interceptor = TaggedHttpLoggingInterceptor(
+            DefaultLogCollectorFactory(cfg)
         ).apply { level = OkHttpLogLevel.BODY }
 
         val client = OkHttpClient.Builder()
@@ -308,6 +359,18 @@ internal class TaggedHttpLoggingInterceptorIntegrationTest {
 
         return client
     }
+
+    private fun defaultTestConfig(): Config =
+        Config(
+            tag = {
+                "nwk: ${reqTag(10)} #${reqNum(3)}"
+            },
+            loggingStrategy = Config.LoggingStrategy.Accumulate(
+                synchronizeLogging = true,
+                logLevelScheme = HighlightedErrors(),
+            ),
+            printer = ChunkingPrinter(testPrinter),
+        )
 }
 
 private fun TestPrinter.assertLines(expectedMultiline: String) {
