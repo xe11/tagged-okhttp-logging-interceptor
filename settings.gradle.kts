@@ -37,6 +37,8 @@ dependencyResolutionManagement {
             // https://github.com/mockito/mockito-kotlin/releases
             version("mockitoKotlin", "4.1.0")
 
+            version("jacoco", "0.8.11")
+
             library("androidGradlePlugin", "com.android.tools.build", "gradle")
                 .versionRef("androidGradlePlugin")
 
