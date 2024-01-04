@@ -1,5 +1,7 @@
 Tagged OkHttp Logging Interceptor
 ===================
+[![codecov](https://codecov.io/gh/xe11/tagged-okhttp-logging-interceptor/graph/badge.svg?token=YOSWTZ35LP)](https://codecov.io/gh/xe11/tagged-okhttp-logging-interceptor)
+
 An [OkHttp][link-okhttp] interceptor that prettifies OkHttp logs and makes them more readable, informative and
 filterable by adding a unique tag to each request.
 
