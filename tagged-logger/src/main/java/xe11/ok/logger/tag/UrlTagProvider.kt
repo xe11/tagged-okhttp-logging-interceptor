@@ -18,6 +18,8 @@ private val PATH_SEGMENTS_REPLACEMENTS: List<Pattern> = listOf(
 internal class UrlTagProvider : TagProvider {
 
     override fun getTag(request: Request, length: Short): String {
+        if (length < 1) return ""
+
         val pathSegments = request.url.pathSegments
         val pathSegmentsShortened = pathSegmentsShortened(pathSegments, length)
 
