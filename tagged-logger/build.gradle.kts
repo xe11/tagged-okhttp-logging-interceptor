@@ -2,6 +2,7 @@ plugins {
     id("java-library")
     alias(libs.plugins.kotlinJvm)
     id("maven-publish")
+    jacoco
 }
 
 java {
@@ -52,5 +53,19 @@ tasks.test {
     useJUnitPlatform()
     testLogging {
         events("passed", "skipped", "failed")
+    }
+}
+
+jacoco {
+    toolVersion = libs.versions.jacoco.get()
+    reportsDirectory = layout.buildDirectory.dir("reports/jacoco")
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test) // tests are required to run before generating the report
+    reports {
+        xml.required = true
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir("jacocoHtml")
     }
 }

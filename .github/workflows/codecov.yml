@@ -16,7 +16,7 @@ jobs:
           distribution: 'temurin'
           cache: gradle
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew jacocoTestReport
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         env:
