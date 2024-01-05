@@ -13,6 +13,8 @@ plugins {
 java {
     sourceCompatibility = JavaVersion.VERSION_17
     targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
+    withJavadocJar()
 }
 
 kotlin {
@@ -47,7 +49,7 @@ publishing {
         // ./gradlew publishReleasePublicationToMavenLocal to publish to ~/.m2
 
         maven {
-            //  ./gradlew publishReleaseToMvnBuildDirRepository to publish to <module>/build/repo
+            //  ./gradlew publishReleaseToMvnBuildDirRepository # to publish to <module>/build/repo
             name = "MvnBuildDir"
             url = uri("${project.buildDir}/repo")
         }
