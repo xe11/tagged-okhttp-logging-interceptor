@@ -32,8 +32,8 @@ android {
 }
 
 dependencies {
-
-    implementation project(path: ':tagged-logger-android')
+    // implementation project(path: ':tagged-logger-android')
+    implementation("com.github.xe11:tagged-okhttp-logging-interceptor:0.0.1")
 
     implementation("com.squareup.okhttp3:okhttp:4.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.11.0")
