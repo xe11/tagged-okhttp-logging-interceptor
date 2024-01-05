@@ -15,6 +15,7 @@ import xe11.ok.logger.level.Level
 import xe11.ok.logger.level.OkHttpLogLevel
 import xe11.ok.logger.printer.ChunkingPrinter
 import xe11.ok.logger.printer.Printer
+import xe11.ok.logger.tag.RequestNumberTagProvider
 import java.io.InterruptedIOException
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.toJavaDuration
@@ -27,6 +28,7 @@ internal class TaggedHttpLoggingInterceptorIntegrationTest {
 
     @BeforeEach
     fun setUp() {
+        RequestNumberTagProvider.resetGlobalCounter()
         server.start()
     }
 
@@ -345,12 +347,53 @@ internal class TaggedHttpLoggingInterceptorIntegrationTest {
         )
     }
 
-    private fun buildClient(config: Config? = null): OkHttpClient {
+    @Test
+    fun `requests should be logged with their sequence number when requests made via different clients (and logger) entities`() {
+        val url = server.url("/test/a/b")
+        val port = server.port
+        val request = Request.Builder()
+            .url(url)
+            .header("User-Agent", "okhttp/test")
+            .build()
+        val response = MockResponse()
+            .setResponseCode(503)
+            .setHeader("Test-Header", 42)
+            .setBody(
+                """
+                Error 
+                response
+                body
+                """.trimIndent()
+            )
+
+        server.enqueue(response)
+        val client1 = buildClient(logLevel = OkHttpLogLevel.BASIC)
+        client1.newCall(request).execute()
+        server.enqueue(response)
+        val client2 = buildClient(logLevel = OkHttpLogLevel.BASIC)
+        client2.newCall(request).execute()
+
+        testPrinter.assertLines(
+            """
+            INFO  nwk: TesAB #1  ->> HIT GET http://localhost:$port/test/a/b
+            ERROR  nwk: TesAB #1  --> GET http://localhost:$port/test/a/b http/1.1
+            ERROR  nwk: TesAB #1  <-- 503 Server Error http://localhost:$port/test/a/b
+            INFO  nwk: TesAB #2  ->> HIT GET http://localhost:$port/test/a/b
+            ERROR  nwk: TesAB #2  --> GET http://localhost:$port/test/a/b http/1.1
+            ERROR  nwk: TesAB #2  <-- 503 Server Error http://localhost:$port/test/a/b
+            """
+        )
+    }
+
+    private fun buildClient(
+        config: Config? = null,
+        logLevel: OkHttpLogLevel = OkHttpLogLevel.BODY,
+    ): OkHttpClient {
         val cfg = config ?: defaultTestConfig()
 
         val interceptor = TaggedHttpLoggingInterceptor(
             DefaultLogCollectorFactory(cfg)
-        ).apply { level = OkHttpLogLevel.BODY }
+        ).apply { level = logLevel }
 
         val client = OkHttpClient.Builder()
             .addNetworkInterceptor(interceptor)
@@ -382,8 +425,12 @@ private fun TestPrinter.assertLines(expectedMultiline: String) {
     }
 }
 
+private val timingWithBodyLength = "ms, \\d+-byte body\\)".toRegex()
 private fun String.removeRequestDuration(): String {
-    return if (this.endsWith("ms)")) {
+    return if (
+        this.endsWith("ms)") ||
+        this.contains(timingWithBodyLength)
+    ) {
         this.substring(0, this.lastIndexOf(" ("))
     } else {
         this

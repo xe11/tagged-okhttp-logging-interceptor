@@ -7,7 +7,7 @@ internal class CompositeTagProvider(
 ) {
 
     private val urlTagProvider = UrlTagProvider()
-    private val requestNumberTagProvider = RequestNumberTagProvider()
+    private val requestNumberTagProvider = RequestNumberTagProvider.globalCounter
 
     fun getTag(request: Request): String {
         val tagUtils = TagUtilsImpl(request, urlTagProvider, requestNumberTagProvider)
