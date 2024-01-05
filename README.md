@@ -1,5 +1,6 @@
 Tagged OkHttp Logging Interceptor
 ===================
+[![](https://jitpack.io/v/xe11/tagged-okhttp-logging-interceptor.svg)](https://jitpack.io/#xe11/tagged-okhttp-logging-interceptor)
 [![codecov](https://codecov.io/gh/xe11/tagged-okhttp-logging-interceptor/graph/badge.svg?token=YOSWTZ35LP)](https://codecov.io/gh/xe11/tagged-okhttp-logging-interceptor)
 
 An [OkHttp][link-okhttp] interceptor that prettifies OkHttp logs and makes them more readable, informative and
@@ -19,8 +20,13 @@ It is especially useful in the new Android LogCat:
 #### Download
 
 ```kotlin
+repositories {
+    //...   
+    maven(url = "https://jitpack.io")
+}
+
 dependencies {
-    implementation("com.github.xe11:tagged-okhttp-logging-interceptor:-SNAPSHOT")
+    implementation("com.github.xe11:tagged-okhttp-logging-interceptor:0.0.1")
 }
 ```
 
