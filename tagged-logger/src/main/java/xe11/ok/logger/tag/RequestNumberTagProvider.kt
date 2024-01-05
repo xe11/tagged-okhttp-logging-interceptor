@@ -18,4 +18,15 @@ internal class RequestNumberTagProvider : TagProvider {
         repeat(min(9, exponent)) { result *= 10 }
         return result
     }
+
+    companion object {
+
+        private var _globalCounter = RequestNumberTagProvider()
+        val globalCounter: RequestNumberTagProvider
+            get() = _globalCounter
+
+        internal fun resetGlobalCounter() {
+            _globalCounter = RequestNumberTagProvider()
+        }
+    }
 }
